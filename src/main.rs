@@ -1,3 +1,6 @@
+mod record;
+mod time_entry;
+
 use std::env;
 
 fn main() {
