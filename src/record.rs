@@ -1,4 +1,4 @@
-use crate::time_entry::TimeEntry;
+use crate::time_entry::{parse_time_entry, TimeEntry};
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone};
 use log::{info, trace};
 use regex::Regex;
@@ -57,12 +57,21 @@ impl Record {
                     .parse::<u32>()
                     .unwrap(),
             )
-        }.unwrap();
+        }
+        .unwrap();
+        let mut entries: Vec<Box<dyn TimeEntry>> = Vec::new();
+        for line in group.iter().skip(1) {
+            let result = parse_time_entry(line);
+            result.and_then(|entry| {
+                entries.push(entry);
+                None::<Box<dyn TimeEntry>>
+            });
+        }
         return Record {
             date,
             summary: "hello".to_string(),
-            entries: vec![],
-        }
+            entries
+        };
     }
 
     fn group_records(lines: Vec<&str>) -> Vec<Vec<&str>> {
