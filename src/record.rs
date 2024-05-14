@@ -15,6 +15,7 @@ impl Record {
         return if (content.len() == 4) {
             content.parse::<i32>().unwrap()
         } else {
+            // TODO: config for this?
             content.parse::<i32>().unwrap() + 2000
         };
     }
