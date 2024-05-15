@@ -37,11 +37,12 @@ impl TimeEntry for DurationTimeEntry {
                 .unwrap()
         );
         let duration = minutes + hours;
+        let regex = Regex::new(r"^\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
         return Box::new(DurationTimeEntry {
-            info: TimeEntryInfo {
-                description: "empty desc".parse().unwrap(),
+            info: TimeEntryInfo::new(
+                regex.replace(text, "").as_ref(),
                 duration,
-            },
+            ),
         });
     }
 

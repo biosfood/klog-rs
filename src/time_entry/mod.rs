@@ -5,11 +5,26 @@ use crate::time_entry::duration_time_entry::DurationTimeEntry;
 use chrono::Duration;
 use std::fmt::Debug;
 use log::info;
+use regex::Regex;
 
 #[derive(Debug)]
 pub struct TimeEntryInfo {
     description: String,
     duration: Duration,
+}
+
+impl TimeEntryInfo {
+    fn new(text: &str, duration: Duration) -> TimeEntryInfo {
+        let re = Regex::new(r"^\s*").unwrap();
+        let mut description = re.replace(text, "");
+        let re = Regex::new(r"\s*$").unwrap();
+        let binding = description.to_string();
+        description = re.replace(binding.as_str(), "");
+        return TimeEntryInfo {
+            description: description.to_string(),
+            duration
+        }
+    }
 }
 
 pub trait TimeEntry: Debug {
