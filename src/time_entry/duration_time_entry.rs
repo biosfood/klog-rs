@@ -1,7 +1,6 @@
 use crate::time_entry::{TimeEntry, TimeEntryInfo};
 use chrono::Duration;
 use regex::Regex;
-use std::cmp::min;
 
 #[derive(Debug)]
 pub struct DurationTimeEntry {
@@ -26,7 +25,7 @@ impl TimeEntry for DurationTimeEntry {
                 .or(result.name("alt_minutes"))
                 .map_or("0", |x| x.as_str())
                 .parse::<i64>()
-                .unwrap()
+                .unwrap(),
         );
         let hours = Duration::minutes(
             result
@@ -34,15 +33,12 @@ impl TimeEntry for DurationTimeEntry {
                 .or(result.name("alt_hours"))
                 .map_or("0", |x| x.as_str())
                 .parse::<i64>()
-                .unwrap()
+                .unwrap(),
         );
         let duration = minutes + hours;
         let regex = Regex::new(r"^\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
         return Box::new(DurationTimeEntry {
-            info: TimeEntryInfo::new(
-                regex.replace(text, "").as_ref(),
-                duration,
-            ),
+            info: TimeEntryInfo::new(regex.replace(text, "").as_ref(), duration),
         });
     }
 

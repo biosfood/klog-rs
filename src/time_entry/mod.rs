@@ -1,11 +1,14 @@
-mod break_time_entry;
-mod duration_time_entry;
+use std::fmt::Debug;
+
+use chrono::Duration;
+use regex::Regex;
 
 use crate::time_entry::duration_time_entry::DurationTimeEntry;
-use chrono::Duration;
-use std::fmt::Debug;
-use log::info;
-use regex::Regex;
+use crate::time_entry::range_time_entry::RangeTimeEntry;
+
+mod break_time_entry;
+mod duration_time_entry;
+mod range_time_entry;
 
 #[derive(Debug)]
 pub struct TimeEntryInfo {
@@ -22,28 +25,31 @@ impl TimeEntryInfo {
         description = re.replace(binding.as_str(), "");
         return TimeEntryInfo {
             description: description.to_string(),
-            duration
-        }
+            duration,
+        };
     }
 }
 
 pub trait TimeEntry: Debug {
     fn get_info(&self) -> &TimeEntryInfo;
-    fn new(text: &str) -> Box<dyn TimeEntry> where Self: Sized;
+    fn new(text: &str) -> Box<dyn TimeEntry>
+    where Self: Sized;
     fn test(text: &str) -> bool
-    where
-        Self: Sized;
+    where Self: Sized;
 }
 
 macro_rules! entry_type {
     ($l: ident) => {
-        ($l::test, $l::new)
+        (
+            $l::test as fn(&str) -> bool,
+            $l::new as fn(&str) -> Box<dyn TimeEntry>,
+        )
     };
 }
 
 pub fn parse_time_entry(line: &str) -> Option<Box<dyn TimeEntry>> {
-    for (test, new) in [entry_type!(DurationTimeEntry)] {
-        if (test(line)) {
+    for (test, new) in [entry_type!(DurationTimeEntry), entry_type!(RangeTimeEntry)] {
+        if test(line) {
             return Some(new(line));
         }
     }

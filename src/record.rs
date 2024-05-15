@@ -1,7 +1,8 @@
-use crate::time_entry::{parse_time_entry, TimeEntry};
-use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, TimeZone};
+use chrono::NaiveDate;
 use log::{info, trace};
 use regex::Regex;
+
+use crate::time_entry::{parse_time_entry, TimeEntry};
 
 #[derive(Debug)]
 pub struct Record {
@@ -12,7 +13,7 @@ pub struct Record {
 
 impl Record {
     fn convert_year(content: &str) -> i32 {
-        return if (content.len() == 4) {
+        return if content.len() == 4 {
             content.parse::<i32>().unwrap()
         } else {
             // TODO: config for this?
@@ -24,7 +25,7 @@ impl Record {
         let extract_date_regex =
             Regex::new(r"((?<first>\d+)[.\-/](?<second>\d+)[.\-/](?<third>\d+))").unwrap();
         let date_data = extract_date_regex.captures(group[0]).unwrap();
-        let date = if (group[0].contains(".")) {
+        let date = if group[0].contains(".") {
             // german standard
             NaiveDate::from_ymd_opt(
                 Self::convert_year(date_data.name("third").unwrap().as_str()),
@@ -70,7 +71,7 @@ impl Record {
         return Record {
             date,
             summary: "hello".to_string(),
-            entries
+            entries,
         };
     }
 
@@ -80,13 +81,13 @@ impl Record {
         // allowed date formats are d.m.y, y-m-d and y/m/d
         let record_start_regex = Regex::new(r"\s*((\d{1,2}\.\d{1,2}\.\d{2,4})|(\d{2,4}-\d{1,2}-\d{1,4})|(\d{2,4}/\d{1,2}/\d{1,2}))\s*").unwrap();
         for line in lines {
-            if (record_start_regex.is_match(line)) {
+            if record_start_regex.is_match(line) {
                 result.push(current);
                 current = Vec::new();
             }
             current.push(line);
         }
-        if (!current.is_empty()) {
+        if !current.is_empty() {
             result.push(current);
         }
         return result;
@@ -106,7 +107,7 @@ impl Record {
         let result = groups
             .iter()
             .filter_map(|group| {
-                if (group.is_empty() || !record_start_regex.is_match(group[0])) {
+                if group.is_empty() || !record_start_regex.is_match(group[0]) {
                     return None;
                 }
                 return Some(Record::new(group));

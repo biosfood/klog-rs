@@ -1,11 +1,12 @@
-mod record;
-mod time_entry;
+use std::env;
+
+use env_logger::Env;
+use log::info;
 
 use crate::record::Record;
-use env_logger::Env;
-use log::{info, warn};
-use std::env;
-use std::process::exit;
+
+mod record;
+mod time_entry;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,7 +15,7 @@ fn main() {
         .write_style_or("LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    if (args.len() <= 1) {
+    if args.len() <= 1 {
         info!("need command line args to run!");
         return;
     }
