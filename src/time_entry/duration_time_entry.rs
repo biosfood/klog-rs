@@ -1,6 +1,7 @@
-use crate::time_entry::{TimeEntry, TimeEntryInfo};
 use chrono::Duration;
 use regex::Regex;
+
+use crate::time_entry::{TimeEntry, TimeEntryInfo};
 
 #[derive(Debug)]
 pub struct DurationTimeEntry {
@@ -13,10 +14,8 @@ impl TimeEntry for DurationTimeEntry {
     }
 
     fn new(text: &str) -> Box<dyn TimeEntry>
-    where
-        Self: Sized,
-    {
-        let regex = Regex::new(r"^\s*(((?<hours>\d+)h\s*((?<minutes>\d{1,2})m)?)|((?<alt_minutes>\d+)m)|((?<alt_hours>\d+)h))").unwrap();
+    where Self: Sized {
+        let regex = Regex::new(r"^\s*(?<neg>-)?\s*(((?<hours>\d+)h\s*((?<minutes>\d{1,2})m)?)|((?<alt_minutes>\d+)m)|((?<alt_hours>\d+)h))").unwrap();
         let result = regex.captures(text).unwrap();
 
         let minutes = Duration::minutes(
@@ -35,18 +34,19 @@ impl TimeEntry for DurationTimeEntry {
                 .parse::<i64>()
                 .unwrap(),
         );
-        let duration = minutes + hours;
-        let regex = Regex::new(r"^\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
+        let mut duration = minutes + hours;
+        if result.name("neg").is_some() {
+            duration = -duration;
+        }
+        let regex = Regex::new(r"^\s*-?\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
         return Box::new(DurationTimeEntry {
             info: TimeEntryInfo::new(regex.replace(text, "").as_ref(), duration),
         });
     }
 
     fn test(text: &str) -> bool
-    where
-        Self: Sized,
-    {
-        let regex = Regex::new(r"^\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
+    where Self: Sized {
+        let regex = Regex::new(r"^\s*-?\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))").unwrap();
         return regex.is_match(text);
     }
 }
