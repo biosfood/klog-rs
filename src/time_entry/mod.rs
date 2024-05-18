@@ -6,13 +6,13 @@ use regex::Regex;
 use crate::time_entry::duration_time_entry::DurationTimeEntry;
 use crate::time_entry::range_time_entry::RangeTimeEntry;
 
-mod break_time_entry;
 mod duration_time_entry;
+pub(crate) mod parse_date;
 mod range_time_entry;
 
 #[derive(Debug)]
 pub struct TimeEntryInfo {
-    description: String,
+    pub(crate) description: String,
     duration: Duration,
 }
 
@@ -31,7 +31,7 @@ impl TimeEntryInfo {
 }
 
 pub trait TimeEntry: Debug {
-    fn get_info(&self) -> &TimeEntryInfo;
+    fn get_info(&mut self) -> &mut TimeEntryInfo;
     fn new(text: &str) -> Box<dyn TimeEntry>
     where Self: Sized;
     fn test(text: &str) -> bool

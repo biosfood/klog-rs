@@ -11,8 +11,8 @@ pub struct RangeTimeEntry {
 }
 
 impl TimeEntry for RangeTimeEntry {
-    fn get_info(&self) -> &TimeEntryInfo {
-        return &self.info;
+    fn get_info(&mut self) -> &mut TimeEntryInfo {
+        return &mut self.info;
     }
 
     fn new(text: &str) -> Box<dyn TimeEntry>

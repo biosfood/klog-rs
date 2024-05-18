@@ -1,8 +1,11 @@
+use std::ops::{Deref, DerefMut};
+
 use chrono::NaiveDate;
 use log::{info, trace};
 use regex::Regex;
 
 use crate::time_entry::{parse_time_entry, TimeEntry};
+use crate::time_entry::parse_date::parse_date;
 
 #[derive(Debug)]
 pub struct Record {
@@ -12,65 +15,37 @@ pub struct Record {
 }
 
 impl Record {
-    fn convert_year(content: &str) -> i32 {
-        return if content.len() == 4 {
-            content.parse::<i32>().unwrap()
-        } else {
-            // TODO: config for this?
-            content.parse::<i32>().unwrap() + 2000
-        };
-    }
-
     fn new(group: &Vec<&str>) -> Record {
-        let extract_date_regex =
-            Regex::new(r"((?<first>\d+)[.\-/](?<second>\d+)[.\-/](?<third>\d+))").unwrap();
-        let date_data = extract_date_regex.captures(group[0]).unwrap();
-        let date = if group[0].contains(".") {
-            // german standard
-            NaiveDate::from_ymd_opt(
-                Self::convert_year(date_data.name("third").unwrap().as_str()),
-                date_data
-                    .name("second")
-                    .unwrap()
-                    .as_str()
-                    .parse::<u32>()
-                    .unwrap(),
-                date_data
-                    .name("first")
-                    .unwrap()
-                    .as_str()
-                    .parse::<u32>()
-                    .unwrap(),
-            )
-        } else {
-            NaiveDate::from_ymd_opt(
-                Self::convert_year(date_data.name("first").unwrap().as_str()),
-                date_data
-                    .name("second")
-                    .unwrap()
-                    .as_str()
-                    .parse::<u32>()
-                    .unwrap(),
-                date_data
-                    .name("third")
-                    .unwrap()
-                    .as_str()
-                    .parse::<u32>()
-                    .unwrap(),
-            )
-        }
-        .unwrap();
+        let date = parse_date(group[0]);
         let mut entries: Vec<Box<dyn TimeEntry>> = Vec::new();
+        let mut summary = String::new();
         for line in group.iter().skip(1) {
             let result = parse_time_entry(line);
-            result.and_then(|entry| {
-                entries.push(entry);
-                None::<Box<dyn TimeEntry>>
-            });
+            if result.is_some() {
+                entries.push(result.unwrap());
+                continue;
+            }
+            let new_summary = line.trim();
+            if new_summary.is_empty() {
+                continue;
+            }
+            if entries.is_empty() {
+                if !summary.is_empty() {
+                    summary.push('\n');
+                }
+                summary.push_str(new_summary);
+            } else {
+                let mut current_entry = entries.last_mut().unwrap();
+                let mut info = current_entry.get_info();
+                if !info.description.is_empty() {
+                    info.description.push('\n');
+                }
+                info.description.push_str(new_summary);
+            }
         }
         return Record {
             date,
-            summary: "hello".to_string(),
+            summary,
             entries,
         };
     }
