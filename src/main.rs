@@ -1,24 +1,26 @@
-use std::env;
-
+use clap::Parser;
 use env_logger::Env;
-use log::info;
 
 use crate::record::Record;
 
 mod record;
 mod time_entry;
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    // which file to read
+    #[arg(required = true, help = "which file to read")]
+    filename: String,
+}
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Args::parse();
     let env = Env::default()
         .filter_or("LOG_LEVEL", "warn")
         .write_style_or("LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    if args.len() <= 1 {
-        info!("need command line args to run!");
-        return;
-    }
-    let records: Vec<Record> = Record::load_from_file(&args[1]);
+    let records: Vec<Record> = Record::load_from_file(&args.filename);
     dbg!(records);
 }
