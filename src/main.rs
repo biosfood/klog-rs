@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use std::ops::Deref;
 
-use chrono::{Datelike, Local};
+use chrono::{Datelike, Local, NaiveDate, Weekday};
 use clap::{Parser, Subcommand};
 use env_logger::Env;
 
@@ -31,6 +31,16 @@ enum TimeRange {
     Year,
 }
 
+fn check_time_range(range: &TimeRange, a: NaiveDate, b: NaiveDate) -> bool {
+    match range {
+        TimeRange::Day => a == b,
+        TimeRange::Week => a.week(Weekday::Sun).first_day() == b.week(Weekday::Sun).first_day(),
+        TimeRange::Month => a.month() == b.month(),
+        TimeRange::Quarter => a.month() / 3 == b.month() / 3,
+        TimeRange::Year => a.year() == b.year(),
+    }
+}
+
 #[derive(Debug, Subcommand, PartialEq)]
 enum Command {
     Report {
@@ -52,7 +62,7 @@ fn main() {
             let now = Local::now().date_naive();
             let filtered_records = records
                 .iter()
-                .filter(|record| true) // TODO
+                .filter(|record| check_time_range(&time_range, now, record.date))
                 .collect::<Vec<&Record>>();
             dbg!(filtered_records);
         }
