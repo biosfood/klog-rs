@@ -1,4 +1,8 @@
-use clap::Parser;
+use std::cmp::PartialEq;
+use std::ops::Deref;
+
+use chrono::{Datelike, Local};
+use clap::{Parser, Subcommand};
 use env_logger::Env;
 
 use crate::record::Record;
@@ -12,6 +16,27 @@ struct Args {
     // which file to read
     #[arg(required = true, help = "which file to read")]
     filename: String,
+
+    #[clap(subcommand)]
+    command: Command,
+}
+
+#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq)]
+enum TimeRange {
+    Day,
+    Week,
+    #[default]
+    Month,
+    Quarter,
+    Year,
+}
+
+#[derive(Debug, Subcommand, PartialEq)]
+enum Command {
+    Report {
+        #[clap(value_enum, default_value_t = TimeRange::Month)]
+        time_range: TimeRange,
+    },
 }
 
 fn main() {
@@ -22,5 +47,14 @@ fn main() {
     env_logger::init_from_env(env);
 
     let records: Vec<Record> = Record::load_from_file(&args.filename);
-    dbg!(records);
+    match args.command {
+        Command::Report { time_range } => {
+            let now = Local::now().date_naive();
+            let filtered_records = records
+                .iter()
+                .filter(|record| true) // TODO
+                .collect::<Vec<&Record>>();
+            dbg!(filtered_records);
+        }
+    }
 }

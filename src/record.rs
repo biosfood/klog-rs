@@ -9,7 +9,7 @@ use crate::time_entry::parse_date::parse_date;
 
 #[derive(Debug)]
 pub struct Record {
-    date: NaiveDate,
+    pub(crate) date: NaiveDate,
     summary: String,
     entries: Vec<Box<dyn TimeEntry>>,
 }
