@@ -13,7 +13,7 @@ mod range_time_entry;
 #[derive(Debug)]
 pub struct TimeEntryInfo {
     pub(crate) description: String,
-    duration: Duration,
+    pub duration: Duration,
 }
 
 impl TimeEntryInfo {
@@ -31,7 +31,8 @@ impl TimeEntryInfo {
 }
 
 pub trait TimeEntry: Debug {
-    fn get_info(&mut self) -> &mut TimeEntryInfo;
+    fn get_info_mut(&mut self) -> &mut TimeEntryInfo;
+    fn get_info(&self) -> &TimeEntryInfo;
     fn new(text: &str) -> Box<dyn TimeEntry>
     where Self: Sized;
     fn test(text: &str) -> bool

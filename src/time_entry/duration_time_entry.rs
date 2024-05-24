@@ -9,8 +9,12 @@ pub struct DurationTimeEntry {
 }
 
 impl TimeEntry for DurationTimeEntry {
-    fn get_info(&mut self) -> &mut TimeEntryInfo {
+    fn get_info_mut(&mut self) -> &mut TimeEntryInfo {
         return &mut self.info;
+    }
+
+    fn get_info(&self) -> &TimeEntryInfo {
+        return &self.info;
     }
 
     fn new(text: &str) -> Box<dyn TimeEntry>

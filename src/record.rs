@@ -11,7 +11,7 @@ use crate::time_entry::parse_date::parse_date;
 pub struct Record {
     pub(crate) date: NaiveDate,
     summary: String,
-    entries: Vec<Box<dyn TimeEntry>>,
+    pub(crate) entries: Vec<Box<dyn TimeEntry>>,
 }
 
 impl Record {
@@ -36,7 +36,7 @@ impl Record {
                 summary.push_str(new_summary);
             } else {
                 let mut current_entry = entries.last_mut().unwrap();
-                let mut info = current_entry.get_info();
+                let mut info = current_entry.get_info_mut();
                 if !info.description.is_empty() {
                     info.description.push('\n');
                 }
