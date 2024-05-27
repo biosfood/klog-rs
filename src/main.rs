@@ -1,68 +1,16 @@
-use std::cmp::PartialEq;
-use std::ops::Deref;
-
-use chrono::{Datelike, Duration, Local, NaiveDate, TimeDelta, Weekday};
-use clap::{Parser, Subcommand};
+use chrono::{Duration, Local, TimeDelta};
+use clap::Parser;
 use env_logger::Env;
-use log::{debug, info, trace};
+use log::{debug, info};
 
+use crate::arguments::{Args, Command};
 use crate::record::Record;
+use crate::time_range::{check_time_range, format_time_range, TimeRange};
 
+mod arguments;
 mod record;
 mod time_entry;
-
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    // which file to read
-    #[arg(required = true, help = "which file to read")]
-    filename: String,
-
-    #[clap(subcommand)]
-    command: Command,
-}
-
-#[derive(clap::ValueEnum, Clone, Default, Debug, PartialEq)]
-enum TimeRange {
-    Day,
-    Week,
-    #[default]
-    Month,
-    Quarter,
-    Year,
-}
-
-fn check_time_range(range: &TimeRange, a: NaiveDate, b: NaiveDate) -> bool {
-    match range {
-        TimeRange::Day => a == b,
-        TimeRange::Week => a.week(Weekday::Sun).first_day() == b.week(Weekday::Sun).first_day(),
-        TimeRange::Month => a.month() == b.month(),
-        TimeRange::Quarter => a.month() / 3 == b.month() / 3,
-        TimeRange::Year => a.year() == b.year(),
-    }
-}
-
-fn format_time_range(range: &TimeRange, date: NaiveDate) -> String {
-    match range {
-        TimeRange::Year => format!("{}", date.year()),
-        TimeRange::Quarter => format!("{}Q{}", date.year(), date.month() / 3),
-        TimeRange::Week => format!(
-            "{} - {}",
-            date.week(Weekday::Sun).first_day(),
-            date.week(Weekday::Sun).last_day()
-        ),
-        TimeRange::Month => format!("{}-{}", date.year(), date.month()),
-        TimeRange::Day => format!("{}", date),
-    }
-}
-
-#[derive(Debug, Subcommand, PartialEq)]
-enum Command {
-    Report {
-        #[clap(value_enum, default_value_t = TimeRange::Month)]
-        time_range: TimeRange,
-    },
-}
+mod time_range;
 
 fn main() {
     let args = Args::parse();
@@ -91,7 +39,7 @@ fn main() {
             let mut record_groups: Vec<Vec<&Record>> = Vec::new();
             for record in filtered_records {
                 let mut have_pushed = false;
-                for mut group in record_groups.iter_mut() {
+                for group in record_groups.iter_mut() {
                     if check_time_range(&group_time_range, group.first().unwrap().date, record.date)
                     {
                         group.push(record);

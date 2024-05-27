@@ -1,5 +1,5 @@
 use chrono::{Duration, NaiveTime};
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use regex::Regex;
 
 use crate::time_entry::{TimeEntry, TimeEntryInfo};

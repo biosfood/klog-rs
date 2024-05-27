@@ -1,7 +1,5 @@
-use std::ops::{Deref, DerefMut};
-
 use chrono::NaiveDate;
-use log::{info, trace};
+use log::trace;
 use regex::Regex;
 
 use crate::time_entry::{parse_time_entry, TimeEntry};
@@ -35,8 +33,8 @@ impl Record {
                 }
                 summary.push_str(new_summary);
             } else {
-                let mut current_entry = entries.last_mut().unwrap();
-                let mut info = current_entry.get_info_mut();
+                let current_entry = entries.last_mut().unwrap();
+                let info = current_entry.get_info_mut();
                 if !info.description.is_empty() {
                     info.description.push('\n');
                 }
