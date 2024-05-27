@@ -54,7 +54,7 @@ impl Record {
         let mut result: Vec<Vec<&str>> = Vec::new();
         let mut current: Vec<&str> = Vec::new();
         // allowed date formats are d.m.y, y-m-d and y/m/d
-        let record_start_regex = Regex::new(r"\s*((\d{1,2}\.\d{1,2}\.\d{2,4})|(\d{2,4}-\d{1,2}-\d{1,4})|(\d{2,4}/\d{1,2}/\d{1,2}))\s*").unwrap();
+        let record_start_regex = Regex::new(r"((\d{1,2}\.\d{1,2}\.\d{2,4})|(\d{2,4}-\d{1,2}-\d{1,4})|(\d{2,4}/\d{1,2}/\d{1,2}))(\s|$)").unwrap();
         for line in lines {
             if record_start_regex.is_match(line) {
                 result.push(current);
@@ -69,11 +69,11 @@ impl Record {
     }
 
     pub fn load_from_file(filename: &String) -> Vec<Record> {
-        let record_start_regex = Regex::new(r"\s*((\d{1,2}\.\d{1,2}\.\d{2,4})|(\d{2,4}-\d{1,2}-\d{1,4})|(\d{2,4}/\d{1,2}/\d{1,2}))\s*").unwrap();
-        info!("trying to read file {filename}");
+        let record_start_regex = Regex::new(r"((\d{1,2}\.\d{1,2}\.\d{2,4})|(\d{2,4}-\d{1,2}-\d{1,4})|(\d{2,4}/\d{1,2}/\d{1,2}))(\s|$)").unwrap();
+        trace!("trying to read file {filename}");
         let file_content = std::fs::read_to_string(filename)
             .expect(format!("Could not read file {filename}").as_str());
-        let lines: Vec<&str> = file_content.split("\n").collect();
+        let lines: Vec<&str> = file_content.split("\n").map(|line| line.trim()).collect();
         trace!(
             "finished reading file {filename} to RAM, read {} line(s)",
             lines.len()
