@@ -1,4 +1,4 @@
-use chrono::{Duration, Local, TimeDelta};
+use chrono::Duration;
 use clap::Parser;
 use env_logger::Env;
 use log::{debug, info};
@@ -22,11 +22,13 @@ fn main() {
     let records: Vec<Record> = Record::load_from_file(&args.filename);
     info!("read {} records", &records.iter().count());
     match args.command {
-        Command::Report { time_range } => {
-            let now = Local::now().date_naive();
+        Command::Report {
+            time_range,
+            reference,
+        } => {
             let filtered_records: Vec<&Record> = records
                 .iter()
-                .filter(|record| check_time_range(&time_range, now, record.date))
+                .filter(|record| check_time_range(&time_range, reference, record.date))
                 .collect();
             info!("filtered {} records", &filtered_records.iter().count());
             let group_time_range = match time_range {
