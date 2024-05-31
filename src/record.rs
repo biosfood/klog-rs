@@ -4,6 +4,7 @@ use regex::Regex;
 
 use crate::time_entry::{parse_time_entry, TimeEntry};
 use crate::time_entry::parse_date::parse_date;
+use crate::time_range::{check_time_range, TimeRange};
 
 #[derive(Debug)]
 pub struct Record {
@@ -88,4 +89,25 @@ impl Record {
             .collect();
         return result;
     }
+}
+
+pub fn group_records<'a>(
+    records: Vec<&'a Record>,
+    group_time_range: &TimeRange,
+) -> Vec<Vec<&'a Record>> {
+    let mut groups: Vec<Vec<&Record>> = Vec::new();
+
+    for record in records {
+        let mut have_pushed = false;
+        for group in groups.iter_mut() {
+            if check_time_range(&group_time_range, group.first().unwrap().date, record.date) {
+                group.push(record);
+                have_pushed = true;
+            }
+        }
+        if !have_pushed {
+            groups.push(vec![record]);
+        }
+    }
+    return groups;
 }

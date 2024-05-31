@@ -4,7 +4,7 @@ use env_logger::Env;
 use log::{debug, info};
 
 use crate::arguments::{Args, Command};
-use crate::record::Record;
+use crate::record::{group_records, Record};
 use crate::time_range::{check_time_range, format_time_range, TimeRange};
 
 mod arguments;
@@ -36,45 +36,39 @@ fn main() {
                 TimeRange::Quarter => TimeRange::Week,
                 TimeRange::Year => TimeRange::Month,
             };
-            let mut record_groups: Vec<Vec<&Record>> = Vec::new();
-            for record in filtered_records {
-                let mut have_pushed = false;
-                for group in record_groups.iter_mut() {
-                    if check_time_range(&group_time_range, group.first().unwrap().date, record.date)
-                    {
-                        group.push(record);
-                        have_pushed = true;
-                    }
-                }
-                if !have_pushed {
-                    record_groups.push(vec![record]);
-                }
-            }
+            let record_groups: Vec<Vec<&Record>> =
+                group_records(filtered_records, &group_time_range);
             debug!("created {} record groups", record_groups.iter().count());
-            let mut total = TimeDelta::new(0, 0).unwrap();
-            record_groups.iter().for_each(|group| {
-                let group_time: Duration = group
-                    .iter()
-                    .map(|record| {
-                        record
-                            .entries
-                            .iter()
-                            .map(|entry| entry.get_info().duration)
-                            .sum::<Duration>()
-                    })
-                    .sum::<Duration>();
+            let group_times = record_groups
+                .iter()
+                .map(|group| {
+                    group
+                        .iter()
+                        .map(|record| {
+                            record
+                                .entries
+                                .iter()
+                                .map(|entry| entry.get_info().duration)
+                                .sum::<Duration>()
+                        })
+                        .sum::<Duration>()
+                })
+                .collect::<Vec<Duration>>();
+            let total_time = group_times.iter().sum::<Duration>();
+
+            for (i, group) in record_groups.iter().enumerate() {
+                let group_time = group_times[i];
                 println!(
                     "{}: {}h, {}min",
                     format_time_range(&group_time_range, group.first().unwrap().date),
                     group_time.num_hours(),
                     group_time.num_minutes() % 60,
                 );
-                total += group_time;
-            });
+            }
             println!(
                 "total: {}h, {}min",
-                total.num_hours(),
-                total.num_minutes() % 60
+                total_time.num_hours(),
+                total_time.num_minutes() % 60
             );
         }
     }
