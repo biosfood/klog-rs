@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use chrono::Duration;
 use log::trace;
 use regex::Regex;
@@ -57,5 +59,9 @@ impl TimeEntry for DurationTimeEntry {
     where Self: Sized {
         let regex = Regex::new(r"^-?\s*((\d+h\s*(\d{1,2}m)?)|(\d+([hm])))(\s|$)").unwrap();
         return regex.is_match(text);
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

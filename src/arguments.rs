@@ -1,6 +1,7 @@
 use chrono::Local;
 use chrono::NaiveDate;
 use clap::{Parser, Subcommand, value_parser};
+use clap::ArgAction;
 
 use crate::time_range::TimeRange;
 
@@ -28,5 +29,8 @@ pub enum Command {
 
         #[arg(value_enum, default_value_t = TimeRange::Month, help="The time range to look at", long = "range")]
         time_range: TimeRange,
+
+        #[arg(action = ArgAction::SetTrue, long, help="do a nice export to a csv file")]
+        csv: bool,
     },
 }

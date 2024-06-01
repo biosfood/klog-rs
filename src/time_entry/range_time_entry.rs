@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use chrono::{Duration, NaiveTime};
 use log::{trace, warn};
 use regex::Regex;
@@ -7,8 +9,8 @@ use crate::time_entry::{TimeEntry, TimeEntryInfo};
 #[derive(Debug)]
 pub struct RangeTimeEntry {
     info: TimeEntryInfo,
-    start: NaiveTime,
-    end: NaiveTime,
+    pub start: NaiveTime,
+    pub end: NaiveTime,
 }
 
 impl TimeEntry for RangeTimeEntry {
@@ -60,5 +62,9 @@ impl TimeEntry for RangeTimeEntry {
     where Self: Sized {
         let regex = Regex::new(r"^\d+\s*:\s*\d+\s*-\s*(\d+\s*:\s*\d+|\?)(\s|$)").unwrap();
         return regex.is_match(text);
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

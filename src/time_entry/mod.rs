@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::fmt::Debug;
 
 use chrono::Duration;
@@ -8,7 +9,7 @@ use crate::time_entry::range_time_entry::RangeTimeEntry;
 
 mod duration_time_entry;
 pub(crate) mod parse_date;
-mod range_time_entry;
+pub(crate) mod range_time_entry;
 
 #[derive(Debug)]
 pub struct TimeEntryInfo {
@@ -30,13 +31,15 @@ impl TimeEntryInfo {
     }
 }
 
-pub trait TimeEntry: Debug {
+pub trait TimeEntry: Any + Debug {
     fn get_info_mut(&mut self) -> &mut TimeEntryInfo;
     fn get_info(&self) -> &TimeEntryInfo;
     fn new(text: &str) -> Box<dyn TimeEntry>
     where Self: Sized;
     fn test(text: &str) -> bool
     where Self: Sized;
+
+    fn as_any(&self) -> &dyn Any;
 }
 
 macro_rules! entry_type {
